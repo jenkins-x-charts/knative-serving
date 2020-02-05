@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    networking.knative.dev/wildcard-certificate-provider: nscert
+    serving.knative.dev/release: "v0.12.1"
+  name: networking-ns-cert
+  namespace: knative-serving
+spec:
+  selector:
+    matchLabels:
+      app: networking-ns-cert
+  template:
+    metadata:
+      annotations:
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+      labels:
+        app: networking-ns-cert
+        serving.knative.dev/release: "v0.12.1"
+    spec:
+      containers:
+      - env:
+        - name: SYSTEM_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: CONFIG_LOGGING_NAME
+          value: config-logging
+        - name: CONFIG_OBSERVABILITY_NAME
+          value: config-observability
+        - name: METRICS_DOMAIN
+          value: knative.dev/serving
+        image: gcr.io/knative-releases/knative.dev/serving/cmd/networking/nscert@sha256:b1021451fd16255fc71740f4ee97b5c810f04b61f354f95d9468b4ed90c77c9c
+        name: networking-nscert
+        ports:
+        - containerPort: 9090
+          name: metrics
+        - containerPort: 8008
+          name: profiling
+        resources:
+          limits:
+            cpu: 300m
+            memory: 400Mi
+          requests:
+            cpu: 30m
+            memory: 40Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+      serviceAccountName: controller
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: networking-ns-cert
+    networking.knative.dev/wildcard-certificate-provider: nscert
+    serving.knative.dev/release: "v0.12.1"
+  name: networking-ns-cert
+  namespace: knative-serving
+spec:
+  ports:
+  - name: http-metrics
+    port: 9090
+    targetPort: 9090
+  - name: http-profiling
+    port: 8008
+    targetPort: 8008
+  selector:
+    app: networking-ns-cert
+
+---
