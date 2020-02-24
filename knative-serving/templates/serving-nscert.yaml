@@ -68,4 +68,3 @@ spec:
   selector:
     app: networking-ns-cert
 
----

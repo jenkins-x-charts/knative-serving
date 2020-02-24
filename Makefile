@@ -21,7 +21,6 @@ download: clean
 	cd knative-serving/templates && wget https://github.com/knative/serving/releases/download/v$(VERISON)/serving-nscert.yaml
 
 build: clean setup
-	helm dependency build knative-serving
 	helm lint knative-serving
 
 install: clean build

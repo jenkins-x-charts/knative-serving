@@ -1731,5 +1731,4 @@ metadata:
     serving.knative.dev/release: "v0.12.1"
   name: webhook-certs
   namespace: knative-serving
-
----
+ 

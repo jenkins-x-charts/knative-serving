@@ -167,5 +167,3 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
       serviceAccountName: controller
-
----

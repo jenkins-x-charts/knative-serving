@@ -394,5 +394,3 @@ spec:
   subresources:
     status: {}
   version: v1alpha1
-
----
