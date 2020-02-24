@@ -1,7 +1,8 @@
 CHART_REPO := http://jenkins-x-chartmuseum:8080
 NAME := knative-serving
 OS := $(shell uname)
-VERSION := 0.1.0
+VERSION := 0.1.1
+KNATIVE_VERSION := 0.12.1
 
 CHARTMUSEUM_CREDS_USR := $(shell cat /builder/home/basic-auth-user.json)
 CHARTMUSEUM_CREDS_PSW := $(shell cat /builder/home/basic-auth-pass.json)
@@ -13,12 +14,15 @@ setup: init
 	helm repo add jenkinsxio http://chartmuseum.jenkins-x.io
 
 download: clean
-	cd knative-serving/templates && wget https://github.com/knative/serving/releases/download/v$(VERISON)/serving-cert-manager.yaml	
-	cd knative-serving/templates && wget https://github.com/knative/serving/releases/download/v$(VERISON)/serving-core.yaml
-	cd knative-serving/templates && wget https://github.com/knative/serving/releases/download/v$(VERISON)/serving-crds.yaml
-	cd knative-serving/templates && wget https://github.com/knative/serving/releases/download/v$(VERISON)/serving-hpa.yaml
-	cd knative-serving/templates && wget https://github.com/knative/serving/releases/download/v$(VERISON)/serving-istio.yaml
-	cd knative-serving/templates && wget https://github.com/knative/serving/releases/download/v$(VERISON)/serving-nscert.yaml
+	cd knative-serving/templates && wget https://github.com/knative/serving/releases/download/v$(KNATIVE_VERSION)/serving-cert-manager.yaml
+	cd knative-serving/templates && wget https://github.com/knative/serving/releases/download/v$(KNATIVE_VERSION)/serving-core.yaml
+	cd knative-serving/templates && wget https://github.com/knative/serving/releases/download/v$(KNATIVE_VERSION)/serving-crds.yaml
+	cd knative-serving/templates && wget https://github.com/knative/serving/releases/download/v$(KNATIVE_VERSION)/serving-hpa.yaml
+	cd knative-serving/templates && wget https://github.com/knative/serving/releases/download/v$(KNATIVE_VERSION)/serving-istio.yaml
+	cd knative-serving/templates && wget https://github.com/knative/serving/releases/download/v$(KNATIVE_VERSION)/serving-nscert.yaml
+
+clean-templates:
+	rm -rf knative-serving/templates/*.yaml
 
 build: clean setup
 	helm lint knative-serving
@@ -33,7 +37,6 @@ delete:
 	helm delete --purge ${NAME} knative-serving
 
 clean:
-	rm -rf knative-serving/templates/*.yaml
 	rm -rf knative-serving/charts
 	rm -rf knative-serving/${NAME}*.tgz
 	rm -rf knative-serving/requirements.lock
