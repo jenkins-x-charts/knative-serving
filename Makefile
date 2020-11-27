@@ -38,13 +38,8 @@ clean:
 	rm -rf ${NAME}*.tgz
 
 release: clean
-	cd  ${CHART_DIR}
-	helm dependency build
-	helm lint
-	helm package .
 	helm repo add jx3 $(CHART_REPO)
-	helm gcs push ${NAME}*.tgz jx3 --public
-	rm -rf ${NAME}*.tgz%
+	cd ${CHART_DIR} && helm dependency build && helm lint && helm package . && helm gcs push ${NAME}*.tgz jx3 --public && rm -rf ${NAME}*.tgz%
 
 test:
 	cd tests && go test -v
