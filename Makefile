@@ -38,6 +38,7 @@ clean:
 	rm -rf ${NAME}*.tgz
 
 release: clean
+	cd  ${CHART_DIR}
 	helm dependency build
 	helm lint
 	helm package .
