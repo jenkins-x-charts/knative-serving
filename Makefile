@@ -1,55 +1,55 @@
-CHART_REPO := http://jenkins-x-chartmuseum:8080
 NAME := knative-serving
-OS := $(shell uname)
-VERSION := 0.1.1
-KNATIVE_VERSION := 0.12.1
+CHART_DIR := charts/${NAME}
 
-CHARTMUSEUM_CREDS_USR := $(shell cat /builder/home/basic-auth-user.json)
-CHARTMUSEUM_CREDS_PSW := $(shell cat /builder/home/basic-auth-pass.json)
+KNATIVE_VERSION := 0.19.0
+CHART_REPO := gs://jenkinsxio/charts
 
-init:
-	helm init --client-only
+all: fetch build
 
-setup: init
-	helm repo add jenkinsxio http://chartmuseum.jenkins-x.io
+fetch:
+	rm -f ${CHART_DIR}/crds/*.yaml
+	rm -f ${CHART_DIR}/templates/*.yaml
+	curl -L https://github.com/knative/serving/releases/download/v${KNATIVE_VERSION}/serving-crds.yaml > ${CHART_DIR}/crds/resource.yaml
+	curl -L https://github.com/knative/serving/releases/download/v${KNATIVE_VERSION}/serving-core.yaml > ${CHART_DIR}/templates/resource.yaml
+	jx gitops split -d ${CHART_DIR}/crds
+	jx gitops rename -d ${CHART_DIR}/crds
+	jx gitops split -d ${CHART_DIR}/templates
+	jx gitops rename -d ${CHART_DIR}/templates
+	#cp src/templates/* ${CHART_DIR}/templates
+	rm ${CHART_DIR}/templates/knative-serving-ns.yaml
+	jx gitops helm escape -d ${CHART_DIR}/templates
+	git add charts
 
-download: clean
-	cd knative-serving/templates && wget https://github.com/knative/serving/releases/download/v$(KNATIVE_VERSION)/serving-cert-manager.yaml
-	cd knative-serving/templates && wget https://github.com/knative/serving/releases/download/v$(KNATIVE_VERSION)/serving-core.yaml
-	cd knative-serving/templates && wget https://github.com/knative/serving/releases/download/v$(KNATIVE_VERSION)/serving-crds.yaml
-	cd knative-serving/templates && wget https://github.com/knative/serving/releases/download/v$(KNATIVE_VERSION)/serving-hpa.yaml
-	cd knative-serving/templates && wget https://github.com/knative/serving/releases/download/v$(KNATIVE_VERSION)/serving-istio.yaml
-	cd knative-serving/templates && wget https://github.com/knative/serving/releases/download/v$(KNATIVE_VERSION)/serving-nscert.yaml
-
-clean-templates:
-	rm -rf knative-serving/templates/*.yaml
-
-build: clean setup
-	helm lint knative-serving
+build: clean
+	rm -rf Chart.lock
+	#helm dependency build
+	helm lint ${CHART_DIR}
 
 install: clean build
-	helm upgrade ${NAME} knative-serving --install
+	helm install . --name ${NAME}
 
 upgrade: clean build
-	helm upgrade ${NAME} knative-serving --install
+	helm upgrade ${NAME} .
 
 delete:
-	helm delete --purge ${NAME} knative-serving
+	helm delete --purge ${NAME}
 
 clean:
-	rm -rf knative-serving/charts
-	rm -rf knative-serving/${NAME}*.tgz
-	rm -rf knative-serving/requirements.lock
-
-release: clean build
-ifeq ($(OS),Darwin)
-	sed -i "" -e "s/version:.*/version: $(VERSION)/" knative-serving/Chart.yaml
-
-else ifeq ($(OS),Linux)
-	sed -i -e "s/version:.*/version: $(VERSION)/" knative-serving/Chart.yaml
-else
-	exit -1
-endif
-	helm package knative-serving
-	curl --fail -u $(CHARTMUSEUM_CREDS_USR):$(CHARTMUSEUM_CREDS_PSW) --data-binary "@$(NAME)-$(VERSION).tgz" $(CHART_REPO)/api/charts
 	rm -rf ${NAME}*.tgz
+
+release: clean
+	sed -i -e "s/version:.*/version: $(VERSION)/" Chart.yaml
+
+	helm dependency build
+	helm lint
+	helm package .
+	helm repo add jx3 $(CHART_REPO)
+	helm gcs push ${NAME}*.tgz jx3 --public
+	rm -rf ${NAME}*.tgz%
+
+test:
+	cd tests && go test -v
+
+test-regen:
+	cd tests && export HELM_UNIT_REGENERATE_EXPECTED=true && go test -v
+
