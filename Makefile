@@ -15,9 +15,9 @@ fetch:
 	jx gitops rename -d ${CHART_DIR}/crds
 	jx gitops split -d ${CHART_DIR}/templates
 	jx gitops rename -d ${CHART_DIR}/templates
-	#cp src/templates/* ${CHART_DIR}/templates
-	rm ${CHART_DIR}/templates/knative-serving-ns.yaml
 	jx gitops helm escape -d ${CHART_DIR}/templates
+	cp src/templates/* ${CHART_DIR}/templates
+	rm ${CHART_DIR}/templates/knative-serving-ns.yaml
 	git add charts
 
 build: clean
