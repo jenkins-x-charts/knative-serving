@@ -56,7 +56,6 @@ spec:
           script: |
             #!/usr/bin/env sh
             #jx gitops helm release
-            cd charts/knative-serving
             make release
   podTemplate: {}
   serviceAccountName: tekton-bot
