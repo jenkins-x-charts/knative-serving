@@ -1,7 +1,7 @@
 apiVersion: v1
 description: A Helm chart for Knative istio networking
 name: knative-net-istio
-version: 0.19.0
+version: 0.19.20
 appVersion: 0.19.0
 icon: https://avatars2.githubusercontent.com/u/47602533
 home: https://github.com/jenkins-x-charts/knative-serving
