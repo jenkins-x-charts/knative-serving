@@ -1,3 +1,5 @@
+domain: ""
+
 jxRequirements:
   ingress:
     domain: "example.com"
