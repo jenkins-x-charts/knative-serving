@@ -1,0 +1,12 @@
+jxRequirements:
+  ingress:
+    domain: "example.com"
+    externalDNS: false
+    kind: ""
+    namespaceSubDomain: -jx.
+    serviceType: ""
+    tls:
+      email: ""
+      enabled: false
+      production: false
+      secretName: ""

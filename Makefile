@@ -11,6 +11,7 @@ fetch:
 	rm -f ${CHART_DIR}/templates/*.yaml
 	curl -L https://github.com/knative/serving/releases/download/v${KNATIVE_VERSION}/serving-crds.yaml > ${CHART_DIR}/crds/resource.yaml
 	curl -L https://github.com/knative/serving/releases/download/v${KNATIVE_VERSION}/serving-core.yaml > ${CHART_DIR}/templates/resource.yaml
+	curl -L https://github.com/knative/net-istio/releases/download/v${KNATIVE_VERSION}/release.yaml > charts/knative-net-istio/templates/resource.yaml
 	jx gitops split -d ${CHART_DIR}/crds
 	jx gitops rename -d ${CHART_DIR}/crds
 	jx gitops split -d ${CHART_DIR}/templates
@@ -18,6 +19,13 @@ fetch:
 	jx gitops helm escape -d ${CHART_DIR}/templates
 	cp src/templates/* ${CHART_DIR}/templates
 	rm ${CHART_DIR}/templates/knative-serving-ns.yaml
+
+	jx gitops split -d   charts/knative-net-istio/crds
+	jx gitops rename -d   charts/knative-net-istio/crds
+	jx gitops split -d   charts/knative-net-istio/templates
+	jx gitops rename -d   charts/knative-net-istio/templates
+	jx gitops helm escape -d   charts/knative-net-istio/templates
+
 	git add charts
 
 build: clean
@@ -40,6 +48,7 @@ clean:
 release: clean
 	helm repo add jx3 $(CHART_REPO)
 	cd ${CHART_DIR} && helm dependency build && helm lint && helm package . && helm gcs push ${NAME}*.tgz jx3 --public && rm -rf ${NAME}*.tgz%
+	cd charts/knative-net-istio && helm dependency build && helm lint && helm package . && helm gcs push ${NAME}*.tgz jx3 --public && rm -rf ${NAME}*.tgz%
 
 test:
 	cd tests && go test -v
