@@ -48,7 +48,7 @@ clean:
 release: clean
 	helm repo add jx3 $(CHART_REPO)
 	cd ${CHART_DIR} && helm dependency build && helm lint && helm package . && helm gcs push ${NAME}*.tgz jx3 --public && rm -rf ${NAME}*.tgz%
-	cd charts/knative-net-istio && helm dependency build && helm lint && helm package . && helm gcs push ${NAME}*.tgz jx3 --public && rm -rf ${NAME}*.tgz%
+	cd charts/knative-net-istio && helm dependency build && helm lint && helm package . && helm gcs push knative-net-istio.tgz jx3 --public && rm -rf knative-net-istio.tgz%
 
 test:
 	cd tests && go test -v
