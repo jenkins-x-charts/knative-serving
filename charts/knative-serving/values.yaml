@@ -1,5 +1,4 @@
 domain: ""
-
 jxRequirements:
   ingress:
     domain: "example.com"
@@ -12,3 +11,6 @@ jxRequirements:
       enabled: false
       production: false
       secretName: ""
+image:
+  repository: ghcr.io/jenkins-x/knative-serving
+  tag: 0.19.24
